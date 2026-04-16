@@ -24,7 +24,7 @@
 #define I2C_SDA 45
 #define I2C_SCL 46
 
-#define UVSENSOR_PIN 17
+#define UVSENSOR_PIN 18
 
 HardwareSerial GNSSSerial(1);
 GNSS gnss(GNSSSerial, VGNSS_CTRL);
@@ -104,6 +104,7 @@ void setup() {
 }
 
 void loop() {
+    roverDrive.update();
     // 1. GNSS Update
     gnss.update();
 
@@ -192,6 +193,6 @@ if (millis() - lastTx > 750) {
     lastTx = millis();
 }
 
-    roverDrive.update();
+    
     delay(20);
 }
