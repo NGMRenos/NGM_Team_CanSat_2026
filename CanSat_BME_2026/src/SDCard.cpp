@@ -36,7 +36,7 @@ bool SDCard::logMessage(double lat, double lon, uint32_t sats,
 
     char dataBuffer[260];
     snprintf(dataBuffer, sizeof(dataBuffer),
-             "%lu,%02d/%02d/%04d %02d:%02d:%02d,%.6f,%.6f,%lu,%.1f,%.1f,%u,%u,%u",
+             "%lu,%02d/%02d/%04d %02d:%02d:%02d,%.6f,%.6f,%lu,%.1f,%.1f",
              millis(),
              day, month, year,
              h, m, s,

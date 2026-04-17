@@ -37,6 +37,7 @@ void setup() {
     Serial.println("\n--- SYSTEM BOOT ---");
 
     // GNSS INIT
+    GNSSSerial.setRxBufferSize(1024);
     GNSSSerial.begin(115200, SERIAL_8N1, GNSS_RX, GNSS_TX);
     gnss.begin();
 
@@ -47,6 +48,7 @@ void setup() {
     // I2C SCANNER & INIT
     Serial.println("I2C Scanner starting...");
     Wire.begin(I2C_SDA, I2C_SCL); 
+    Wire.setClock(400000);
     
     // int nDevices = 0;
     // for (uint8_t address = 1; address < 127; address++) {
@@ -108,38 +110,36 @@ void loop() {
     // 2. BME280 Update
     bme.update();
     if (bme.isAvailable()) {
-        // ★ Περνάμε Temp, Pressure ΚΑΙ Humidity
         monitor.updateBME(bme.temperature(), bme.pressure(), bme.humidity());
     }
 
-    // Serial Print BME280
-    if (bme.isAvailable()) {
-        Serial.printf("BME T=%.1f°C H=%.1f%% P=%.0fhPa | ", 
-                      bme.temperature(), bme.humidity(), bme.pressure());
-    }
-
-    Serial.printf("GPS %02d:%02d:%02d Sats: %d\n", h, m, s, sats);
-
-    // 4. Transmit & Logging
+    // 4. Transmit, Logging & Serial Print (Εκτελείται κάθε 750ms)
     static uint32_t lastTx = 0;
-if (millis() - lastTx > 750) {
+    if (millis() - lastTx > 750) {
+        lastTx = millis();
 
-    float temp = bme.temperature();
-    float press = bme.pressure();
+        float temp = bme.temperature();
+        float press = bme.pressure();
 
-    // LoRa με ENS160
-    LoRa.sendCombined(lat, lon, sats, h, m, s,
-                      temp, press);
+        // ★ ΜΕΤΑΦΕΡΑΜΕ ΤΑ PRINT ΕΔΩ ΜΕΣΑ!
+        // Πλέον θα τυπώνονται σωστά, 1 φορά κάθε 750 milliseconds
+        if (bme.isAvailable()) {
+            Serial.printf("BME T=%.1f°C H=%.1f%% P=%.0fhPa | ", 
+                          temp, bme.humidity(), press);
+        }
+        Serial.printf("GPS %02d:%02d:%02d Sats: %d\n", h, m, s, sats);
 
-    // SD με ENS160
-    if (sdCard.isAvailable()) {
-        sdCard.logMessage(lat, lon, sats, h, m, s, d, mo, y,
-                          temp, press);
-    }
+        // LoRa αποστολή
+        LoRa.sendCombined(lat, lon, sats, h, m, s, temp, press);
+
+        // SD αποθήκευση
+        if (sdCard.isAvailable()) {
+            sdCard.logMessage(lat, lon, sats, h, m, s, d, mo, y, temp, press);
+        }
 
     lastTx = millis();
 }
 
     
-    delay(20);
+    // delay(20);
 }

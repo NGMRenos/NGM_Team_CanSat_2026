@@ -4,8 +4,8 @@
 // ----- GPIO (Ακριβώς όπως τα ζήτησες) -----
 const int AIN1_PIN = 15;   
 const int AIN2_PIN = 16;   
-const int BIN1_PIN = 26;   // ΠΡΟΣΟΧΗ: Αυτό είναι και το Vext_Ctrl (Ρεύμα Servos)
-const int BIN2_PIN = 37;   
+const int BIN1_PIN = 37;   // ΠΡΟΣΟΧΗ: Αυτό είναι και το Vext_Ctrl (Ρεύμα Servos)
+const int BIN2_PIN = 26;   
 const int EEP_PIN  = 3;    
 const int SERVO_PIN = 17;  
 
@@ -43,13 +43,10 @@ static void setServoAngle(int angle) {
 static void setMotor(int speed, int chFwd, int chRev) {
     speed = constrain(speed, -255, 255);
     
-    // ΕΙΔΙΚΗ ΔΙΟΡΘΩΣΗ ΓΙΑ ΤΟ PIN 16:
-    // Αν το μοτέρ στο Pin 16 σταματήσει, πρέπει να βεβαιωθούμε ότι το Pin 16
-    // μένει LOW, αλλιώς τα Servos θα χάσουν το ρεύμα τους (Vext OFF).
+
     if (speed == 0) {
         ledcWrite(chFwd, 0);
         ledcWrite(chRev, 0);
-        if (chFwd == 16) digitalWrite(16, LOW); // Εξαναγκασμός Vext ON
         return;
     }
 
